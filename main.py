@@ -1,16 +1,29 @@
-# 샘플 Python 스크립트입니다.
+import streamlit as st
 
-# Shift+F10을(를) 눌러 실행하거나 내 코드로 바꿉니다.
-# 클래스, 파일, 도구 창, 액션 및 설정을 어디서나 검색하려면 Shift 두 번을(를) 누릅니다.
+from llm import get_ai_response
 
+st.set_page_config(
+    page_title="소득세 챗봇",
+    page_icon="🤖"
+)
 
-def print_hi(name):
-    # 스크립트를 디버그하려면 하단 코드 줄의 중단점을 사용합니다.
-    print(f'Hi, {name}')  # 중단점을 전환하려면 Ctrl+F8을(를) 누릅니다.
+st.title("🤖 소득세 챗봇")
+st.caption("소득세에 관련된 모든것을 답해드립니다!")
 
+if 'message_list' not in st.session_state:
+    st.session_state.message_list = []
 
-# 스크립트를 실행하려면 여백의 녹색 버튼을 누릅니다.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+for message in st.session_state.message_list:
+    with st.chat_message(message["role"]):
+        st.write(message["content"])
 
-# https://www.jetbrains.com/help/pycharm/에서 PyCharm 도움말 참조
+if user_question := st.chat_input(placeholder="소득세에 관련된 궁금한 내용들을 말씀해주세요!"):
+    with st.chat_message("user"):
+        st.write(user_question)
+    st.session_state.message_list.append({"role": "user", "content": user_question})
+
+    with st.spinner("답변을 생성하는 중 입니다"):
+        ai_message = get_ai_response(user_question)
+    with st.chat_message("ai"):
+        ai_message = st.write_stream(ai_message)
+        st.session_state.message_list.append({"role": "ai", "content": ai_message})
